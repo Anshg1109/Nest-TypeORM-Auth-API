@@ -1,8 +1,9 @@
-import { NotFoundException } from '@nestjs/common';
+import { ConflictException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import User from './user.entity';
 import { CreateUserDto } from './dto/user.dto';
+import * as bcrypt from 'bcryptjs';
 
 export class UsersService {
   constructor(
@@ -28,11 +29,21 @@ export class UsersService {
   }
 
   async createUser(createUserDto: CreateUserDto) {
+    const email = createUserDto.email
+    const userExists = await this.usersRepository.findOne({
+      where: { email },
+    });
+    if (userExists) {
+      throw new ConflictException('Email is already Exists, Try with different EmailId');
+    }
     const newUser = await this.usersRepository.create(createUserDto);
+    
+    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+    
     await this.usersRepository.save({
       name: createUserDto.name,
       email: createUserDto.email,
-      password: createUserDto.password,
+      password: hashedPassword,
     });
     return newUser;
   }

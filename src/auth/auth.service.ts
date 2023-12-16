@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import User from '../user/user.entity';
@@ -19,7 +19,12 @@ export class AuthService {
 
   async signUp(signUpDto: SignUpDto): Promise<{ token: string }> {
     const { name, email, password } = signUpDto;
-
+    const userExists = await this.usersRepository.findOne({
+      where: { email },
+    });
+    if (userExists) {
+      throw new ConflictException('Email is already Exists, Try with different EmailId');
+    }
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await this.usersRepository.create({
