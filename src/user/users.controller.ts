@@ -20,7 +20,7 @@ export class UsersController {
     return user;
   }
 
-  @Post()
+  @Post('/CreateUser')
   @UseGuards(AuthGuard('jwt'))
   async createUser(@Body() createUserDto: CreateUserDto) {
     const newUser = await this.usersService.createUser(createUserDto);

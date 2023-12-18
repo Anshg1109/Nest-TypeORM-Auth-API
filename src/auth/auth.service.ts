@@ -34,8 +34,8 @@ export class AuthService {
     });
 
     await this.usersRepository.save(user);
-
-    const token = this.jwtService.sign({ id: user.id });
+    const expiresIn = process.env.JWT_EXPIRES || '3600s';
+    const token = this.jwtService.sign({ id: user.id }, {expiresIn});
 
     return { token };
   }
@@ -56,8 +56,8 @@ export class AuthService {
     if (!isPasswordMatched) {
       throw new UnauthorizedException('Invalid email or password');
     }
-
-    const token = this.jwtService.sign({ id: user.id });
+    const expiresIn = process.env.JWT_EXPIRES || '3600s';
+    const token = this.jwtService.sign({ id: user.id }, {expiresIn});
 
     return { token };
   }
